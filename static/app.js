@@ -295,6 +295,59 @@ sampleSelect.addEventListener('change', async (e) => {
         textProbBars.innerHTML = generateProbBars(data.text.probabilities, data.text.prediction, 'text-fill');
         fusionProbBars.innerHTML = generateProbBars(data.fusion.probabilities, data.fusion.prediction, 'fusion-fill');
 
+        // Update Emoji Showcase
+        const winningEmotion = data.fusion.prediction.toLowerCase();
+        const emotionEmoji = document.getElementById('emotion-emoji');
+        const emotionEmojiText = document.getElementById('emotion-emoji-text');
+        
+        const emojiMap = {
+            "angry": "😡",
+            "disgust": "🤢",
+            "fear": "😨",
+            "happy": "😊",
+            "neutral": "😐",
+            "sad": "😢",
+            "ps": "😲"
+        };
+        const emojiTextMap = {
+            "angry": "Angry",
+            "disgust": "Disgust",
+            "fear": "Fear",
+            "happy": "Happy",
+            "neutral": "Neutral",
+            "sad": "Sad",
+            "ps": "Surprise"
+        };
+
+        if (emojiMap[winningEmotion]) {
+            emotionEmoji.textContent = emojiMap[winningEmotion];
+            emotionEmojiText.textContent = emojiTextMap[winningEmotion];
+            
+            // Set dynamic glows customized per emotion
+            if (winningEmotion === 'angry') {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 16px rgba(231, 76, 60, 0.65))';
+                emotionEmojiText.style.color = '#ef4444';
+            } else if (winningEmotion === 'happy') {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 16px rgba(16, 185, 129, 0.65))';
+                emotionEmojiText.style.color = '#10b981';
+            } else if (winningEmotion === 'ps') {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 16px rgba(241, 196, 15, 0.65))';
+                emotionEmojiText.style.color = '#f1c40f';
+            } else if (winningEmotion === 'sad') {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 16px rgba(59, 130, 246, 0.65))';
+                emotionEmojiText.style.color = '#3b82f6';
+            } else if (winningEmotion === 'disgust') {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 16px rgba(168, 85, 247, 0.65))';
+                emotionEmojiText.style.color = '#a855f7';
+            } else if (winningEmotion === 'fear') {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 16px rgba(236, 72, 153, 0.65))';
+                emotionEmojiText.style.color = '#ec4899';
+            } else {
+                emotionEmoji.style.filter = 'drop-shadow(0 0 12px rgba(255, 255, 255, 0.15))';
+                emotionEmojiText.style.color = 'var(--text-primary)';
+            }
+        }
+
     } catch (err) {
         console.error("Failed to fetch predictions", err);
     }
