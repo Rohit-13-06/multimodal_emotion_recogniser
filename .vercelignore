@@ -1,0 +1,28 @@
+# Local Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+Include/
+Lib/
+Scripts/
+pyvenv.cfg
+
+# Datasets & Audios
+dataset/
+Results/
+
+# Model Weights
+*.pth
+*.pt
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# OS Metadata
+.DS_Store
+Thumbs.db
