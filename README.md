@@ -1,2 +1,2 @@
-# multmodal_emotion_recogniser
+# multimodal_emotion_recogniser
 .
