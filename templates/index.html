@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multimodal Emotion Recogniser</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Styling -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header class="main-header">
+            <div class="logo-area">
+                <i class="fa-solid fa-circle-nodes brain-glow"></i>
+                <h1>Multimodal <span>Emotion Recogniser</span></h1>
+            </div>
+            <p class="subtitle">State-of-the-Art Deep Learning Speech & Text Late-Fusion Emotion Classifier</p>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Sidebar: Training Control -->
+            <section class="card glassmorphic training-card">
+                <div class="card-header">
+                    <i class="fa-solid fa-gauge-high card-icon"></i>
+                    <h2>Training Dashboard</h2>
+                </div>
+                
+                <div class="training-controls">
+                    <p class="section-desc">Train deep-learning models (CNN+LSTM for speech, frozen BERT for text) and a late-fusion classification layer on TESS Toronto Emotional Speech Set data.</p>
+                    
+                    <div class="model-status-indicator" id="overall-status">
+                        <span class="status-dot warning"></span>
+                        <span class="status-text">Models Untrained</span>
+                    </div>
+
+                    <button class="btn btn-primary" id="start-train-btn">
+                        <i class="fa-solid fa-play"></i> Run Training Pipeline
+                    </button>
+                </div>
+
+                <div class="terminal-container">
+                    <div class="terminal-header">
+                        <span class="terminal-dot red"></span>
+                        <span class="terminal-dot yellow"></span>
+                        <span class="terminal-dot green"></span>
+                        <span class="terminal-title">train_pipeline_stdout.log</span>
+                    </div>
+                    <div class="terminal-body" id="train-terminal">
+                        <div class="terminal-line system">[System] Ready to initiate pipeline. Click "Run Training Pipeline" above.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center: Performance Comparison -->
+            <section class="card glassmorphic performance-card">
+                <div class="card-header">
+                    <i class="fa-solid fa-chart-simple card-icon"></i>
+                    <h2>Model Performance</h2>
+                </div>
+                
+                <div class="stats-container">
+                    <!-- Speech -->
+                    <div class="stat-gauge-wrapper">
+                        <div class="gauge-container speech-gauge">
+                            <svg class="progress-ring" width="120" height="120">
+                                <circle class="progress-ring__circle-bg" stroke="#1d1e22" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                                <circle class="progress-ring__circle" stroke="url(#speech-grad)" stroke-width="8" stroke-dasharray="314.16" stroke-dashoffset="314.16" fill="transparent" r="50" cx="60" cy="60" id="speech-circle"/>
+                                <defs>
+                                    <linearGradient id="speech-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#4facfe"/>
+                                        <stop offset="100%" stop-color="#00f2fe"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="gauge-value" id="speech-acc-text">--%</div>
+                        </div>
+                        <div class="stat-label">Speech Model (CNN+LSTM)</div>
+                    </div>
+
+                    <!-- Text -->
+                    <div class="stat-gauge-wrapper">
+                        <div class="gauge-container text-gauge">
+                            <svg class="progress-ring" width="120" height="120">
+                                <circle class="progress-ring__circle-bg" stroke="#1d1e22" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                                <circle class="progress-ring__circle" stroke="url(#text-grad)" stroke-width="8" stroke-dasharray="314.16" stroke-dashoffset="314.16" fill="transparent" r="50" cx="60" cy="60" id="text-circle"/>
+                                <defs>
+                                    <linearGradient id="text-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#f857a6"/>
+                                        <stop offset="100%" stop-color="#ff5858"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="gauge-value" id="text-acc-text">--%</div>
+                        </div>
+                        <div class="stat-label">Text Model (BERT Classifier)</div>
+                    </div>
+
+                    <!-- Fusion -->
+                    <div class="stat-gauge-wrapper">
+                        <div class="gauge-container fusion-gauge">
+                            <div class="glow-ring"></div>
+                            <svg class="progress-ring" width="120" height="120">
+                                <circle class="progress-ring__circle-bg" stroke="#1d1e22" stroke-width="8" fill="transparent" r="50" cx="60" cy="60"/>
+                                <circle class="progress-ring__circle" stroke="url(#fusion-grad)" stroke-width="8" stroke-dasharray="314.16" stroke-dashoffset="314.16" fill="transparent" r="50" cx="60" cy="60" id="fusion-circle"/>
+                                <defs>
+                                    <linearGradient id="fusion-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#f39c12"/>
+                                        <stop offset="100%" stop-color="#f1c40f"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="gauge-value" id="fusion-acc-text">--%</div>
+                        </div>
+                        <div class="stat-label gold-glow">Late Fusion Model (Concatenated)</div>
+                    </div>
+                </div>
+
+                <div class="eval-insight">
+                    <i class="fa-solid fa-circle-info info-icon"></i>
+                    <p id="insight-text">Please train the models first to populate evaluation metrics.</p>
+                </div>
+            </section>
+
+            <!-- Bottom: PlayGround Area -->
+            <section class="card glassmorphic playground-card">
+                <div class="card-header">
+                    <i class="fa-solid fa-gamepad card-icon"></i>
+                    <h2>Interactive Inference Playground</h2>
+                </div>
+                
+                <div class="playground-layout">
+                    <!-- Left: Selector & Audio Player -->
+                    <div class="play-controls">
+                        <label for="sample-select">Select balanced test audio clip:</label>
+                        <select id="sample-select" class="form-control" disabled>
+                            <option value="">-- Load models to enable playground --</option>
+                        </select>
+
+                        <div class="audio-panel">
+                            <div class="audio-meta">
+                                <div class="meta-item"><span class="label">Speaker:</span> <span id="meta-speaker">--</span></div>
+                                <div class="meta-item"><span class="label">True Emotion:</span> <span id="meta-emotion" class="emotion-badge">--</span></div>
+                                <div class="meta-item"><span class="label">Spoken Word:</span> <span id="meta-word" class="word-badge">--</span></div>
+                            </div>
+                            
+                            <audio id="audio-player" controls src="" class="custom-audio"></audio>
+                        </div>
+
+                        <!-- MFCC Heatmap Spectrogram -->
+                        <div class="spectrogram-panel">
+                            <div class="spec-label">
+                                <span><i class="fa-solid fa-wave-square"></i> Extracted Audio Spectrogram (40x160 MFCC)</span>
+                            </div>
+                            <div class="canvas-container">
+                                <canvas id="mfcc-canvas" width="320" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Prediction Results -->
+                    <div class="prediction-panel">
+                        <div class="panel-title">Model Inference Distributions</div>
+                        
+                        <div class="inference-grid">
+                            
+                            <!-- Speech Prediction -->
+                            <div class="inference-card border-speech">
+                                <div class="inf-header">
+                                    <i class="fa-solid fa-microphone-lines icon-speech"></i>
+                                    <h3>Speech Only</h3>
+                                    <div class="pred-result speech-pred-badge" id="speech-prediction-text">--</div>
+                                </div>
+                                <div class="prob-bars" id="speech-prob-bars"></div>
+                            </div>
+
+                            <!-- Text Prediction -->
+                            <div class="inference-card border-text">
+                                <div class="inf-header">
+                                    <i class="fa-solid fa-file-text icon-text"></i>
+                                    <h3>Text Only</h3>
+                                    <div class="pred-result text-pred-badge" id="text-prediction-text">--</div>
+                                </div>
+                                <div class="prob-bars" id="text-prob-bars"></div>
+                            </div>
+
+                            <!-- Fusion Prediction (Highlighted) -->
+                            <div class="inference-card border-fusion highlighted-inf-card">
+                                <div class="inf-header">
+                                    <i class="fa-solid fa-circle-nodes icon-fusion"></i>
+                                    <h3>Multimodal Fusion</h3>
+                                    <div class="pred-result fusion-pred-badge" id="fusion-prediction-text">--</div>
+                                </div>
+                                <div class="prob-bars" id="fusion-prob-bars"></div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+        </main>
+        
+        <!-- Footer -->
+        <footer class="app-footer">
+            <p>Designed with Antigravity & PyTorch framework. © 2026 Multimodal Emotion Recogniser.</p>
+        </footer>
+    </div>
+
+    <!-- Script -->
+    <script src="/static/app.js"></script>
+</body>
+</html>

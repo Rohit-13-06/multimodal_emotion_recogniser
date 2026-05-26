@@ -1,0 +1,27 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+Scripts/
+Lib/
+
+# Python Cache & Compiled Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Large Datasets (Audio wav files)
+dataset/archive/
+dataset/TESS/
+
+# Deep Learning Checkpoints & Weights
+*.pth
+*.pt
+
+# OS specific files
+.DS_Store
+Thumbs.db
+Desktop.ini
