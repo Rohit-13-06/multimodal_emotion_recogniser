@@ -300,5 +300,22 @@ sampleSelect.addEventListener('change', async (e) => {
     }
 });
 
+// Collapsible Developer Console Panel Interaction
+const devToggleBtn = document.getElementById('dev-toggle-btn');
+const developerPanel = document.getElementById('developer-panel');
+
+devToggleBtn.addEventListener('click', () => {
+    const isHidden = developerPanel.style.display === 'none';
+    if (isHidden) {
+        developerPanel.style.display = 'grid';
+        devToggleBtn.classList.add('active');
+        // Automatically scroll to the panel
+        developerPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        developerPanel.style.display = 'none';
+        devToggleBtn.classList.remove('active');
+    }
+});
+
 // App init
 checkStatus();

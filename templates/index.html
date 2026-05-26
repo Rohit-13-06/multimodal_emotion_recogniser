@@ -24,10 +24,13 @@
                 <h1>Multimodal <span>Emotion Recogniser</span></h1>
             </div>
             <p class="subtitle">State-of-the-Art Deep Learning Speech & Text Late-Fusion Emotion Classifier</p>
+            <button class="btn btn-dev-toggle" id="dev-toggle-btn">
+                <i class="fa-solid fa-sliders"></i> Developer Console
+            </button>
         </header>
 
-        <!-- Main Grid Layout -->
-        <main class="dashboard-grid">
+        <!-- Collapsible Developer Panel (Hidden by Default) -->
+        <div class="developer-panel" id="developer-panel" style="display: none; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2.5rem; width: 100%; margin-bottom: 2.5rem;">
             
             <!-- Left Sidebar: Training Control -->
             <section class="card glassmorphic training-card">
@@ -131,8 +134,10 @@
                     <p id="insight-text">Please train the models first to populate evaluation metrics.</p>
                 </div>
             </section>
+        </div>
 
-            <!-- Bottom: PlayGround Area -->
+        <!-- Main Playground Area (Occupies full width and sits top-level) -->
+        <main class="dashboard-grid">
             <section class="card glassmorphic playground-card">
                 <div class="card-header">
                     <i class="fa-solid fa-gamepad card-icon"></i>

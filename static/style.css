@@ -769,3 +769,35 @@ body::before {
         gap: 2rem;
     }
 }
+
+/* Collapsible Developer Console Toggle Button */
+.btn-dev-toggle {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: var(--text-secondary) !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    padding: 0.5rem 1.2rem !important;
+    border-radius: 10px !important;
+    margin-top: 1rem !important;
+    transition: all 0.25s ease !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    font-family: var(--font-heading) !important;
+}
+
+.btn-dev-toggle:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: var(--text-primary) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-1px) !important;
+}
+
+.btn-dev-toggle.active {
+    background: rgba(0, 242, 254, 0.08) !important;
+    color: var(--speech-primary) !important;
+    border-color: rgba(0, 242, 254, 0.25) !important;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.05) !important;
+}
