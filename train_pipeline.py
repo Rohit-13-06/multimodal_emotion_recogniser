@@ -20,8 +20,8 @@ def load_module_from_path(module_name, file_path):
 
 # Load models
 speech_mod = load_module_from_path("speech_model", os.path.join(script_dir, "models/speech_pipeline/model.py"))
-text_mod = load_module_from_path("text_model", os.path.join(script_dir, "models/speech_pipeline/text_pipeline/model.py"))
-fusion_mod = load_module_from_path("fusion_model", os.path.join(script_dir, "models/speech_pipeline/text_pipeline/fusion_pipeline/model.py"))
+text_mod = load_module_from_path("text_model", os.path.join(script_dir, "models/text_pipeline/model.py"))
+fusion_mod = load_module_from_path("fusion_model", os.path.join(script_dir, "models/fusion_pipeline/model.py"))
 
 SpeechModel = speech_mod.SpeechModel
 TextModel = text_mod.TextModel
