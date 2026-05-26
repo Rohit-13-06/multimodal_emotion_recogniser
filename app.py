@@ -43,28 +43,55 @@ def add_header(r):
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATASET_DIR = os.path.join(script_dir, "dataset/archive/TESS Toronto emotional speech set data")
 
-# Load models helper
-def load_trained_models():
-    speech_path = os.path.join(script_dir, "speech_model.pth")
-    text_path = os.path.join(script_dir, "text_model.pth")
-    fusion_path = os.path.join(script_dir, "fusion_model.pth")
+# Global Cache for models, tokenizer, and dataset
+GLOBAL_MODELS = {"speech": None, "text": None, "fusion": None}
+GLOBAL_TOKENIZER = None
+GLOBAL_DATASET = None
 
-    if not (os.path.exists(speech_path) and os.path.exists(text_path) and os.path.exists(fusion_path)):
-        return None, None, None
+def get_tokenizer():
+    global GLOBAL_TOKENIZER
+    if GLOBAL_TOKENIZER is None:
+        GLOBAL_TOKENIZER = BertTokenizer.from_pretrained("bert-base-uncased")
+    return GLOBAL_TOKENIZER
 
-    speech_model = SpeechModel().to(DEVICE)
-    speech_model.load_state_dict(torch.load(speech_path, map_location=DEVICE))
-    speech_model.eval()
+def get_dataset():
+    global GLOBAL_DATASET
+    if GLOBAL_DATASET is None:
+        tokenizer = get_tokenizer()
+        GLOBAL_DATASET = MultimodalTESSDataset(DATASET_DIR, tokenizer, cache=True)
+    return GLOBAL_DATASET
 
-    text_model = TextModel().to(DEVICE)
-    text_model.load_state_dict(torch.load(text_path, map_location=DEVICE))
-    text_model.eval()
+def get_models():
+    global GLOBAL_MODELS
+    if GLOBAL_MODELS["speech"] is None:
+        speech_path = os.path.join(script_dir, "speech_model.pth")
+        text_path = os.path.join(script_dir, "text_model.pth")
+        fusion_path = os.path.join(script_dir, "fusion_model.pth")
 
-    fusion_model = FusionModel().to(DEVICE)
-    fusion_model.load_state_dict(torch.load(fusion_path, map_location=DEVICE))
-    fusion_model.eval()
+        if not (os.path.exists(speech_path) and os.path.exists(text_path) and os.path.exists(fusion_path)):
+            return None, None, None
 
-    return speech_model, text_model, fusion_model
+        speech_model = SpeechModel().to(DEVICE)
+        speech_model.load_state_dict(torch.load(speech_path, map_location=DEVICE))
+        speech_model.eval()
+
+        text_model = TextModel().to(DEVICE)
+        text_model.load_state_dict(torch.load(text_path, map_location=DEVICE))
+        text_model.eval()
+
+        fusion_model = FusionModel().to(DEVICE)
+        fusion_model.load_state_dict(torch.load(fusion_path, map_location=DEVICE))
+        fusion_model.eval()
+
+        GLOBAL_MODELS["speech"] = speech_model
+        GLOBAL_MODELS["text"] = text_model
+        GLOBAL_MODELS["fusion"] = fusion_model
+
+    return GLOBAL_MODELS["speech"], GLOBAL_MODELS["text"], GLOBAL_MODELS["fusion"]
+
+def clear_model_cache():
+    global GLOBAL_MODELS
+    GLOBAL_MODELS = {"speech": None, "text": None, "fusion": None}
 
 @app.route('/')
 def home():
@@ -106,6 +133,7 @@ def train_stream():
             yield f"data: {line}\n\n"
         process.stdout.close()
         process.wait()
+        clear_model_cache() # Clear cache on new train run
         yield "data: [COMPLETE]\n\n"
         
     return Response(generate(), mimetype='text/event-stream')
@@ -115,8 +143,7 @@ def list_samples():
     if not os.path.exists(DATASET_DIR):
         return jsonify({"error": "Dataset folder not found."}), 404
 
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    dataset = MultimodalTESSDataset(DATASET_DIR, tokenizer, cache=False)
+    dataset = get_dataset()
     
     if len(dataset) == 0:
         return jsonify({"error": "No .wav files found in dataset."}), 404
@@ -160,8 +187,7 @@ def list_samples():
 
 @app.route('/api/play/<int:idx>')
 def play_audio(idx):
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    dataset = MultimodalTESSDataset(DATASET_DIR, tokenizer, cache=False)
+    dataset = get_dataset()
     if idx < 0 or idx >= len(dataset):
         return jsonify({"error": "Invalid index."}), 400
         
@@ -170,36 +196,38 @@ def play_audio(idx):
 
 @app.route('/api/predict/<int:idx>')
 def predict(idx):
-    speech_model, text_model, fusion_model = load_trained_models()
+    speech_model, text_model, fusion_model = get_models()
     if not speech_model:
         return jsonify({"error": "Model weights not found. Please train models first."}), 400
 
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    dataset = MultimodalTESSDataset(DATASET_DIR, tokenizer, cache=False)
+    dataset = get_dataset()
     if idx < 0 or idx >= len(dataset):
         return jsonify({"error": "Invalid index."}), 400
 
     item = dataset[idx]
     
-    # Run through Speech Model
+    # Run through Speech, Text, and Fusion Models under no_grad for speed
     speech_input = item["speech_mfcc"].unsqueeze(0).to(DEVICE)
-    speech_logits = speech_model(speech_input)
-    speech_probs = torch.softmax(speech_logits, dim=1).squeeze().tolist()
-    speech_pred = torch.argmax(speech_logits, dim=1).item()
-
-    # Run through Text Model
     input_ids = item["input_ids"].unsqueeze(0).to(DEVICE)
     attention_mask = item["attention_mask"].unsqueeze(0).to(DEVICE)
-    text_logits = text_model(input_ids, attention_mask)
-    text_probs = torch.softmax(text_logits, dim=1).squeeze().tolist()
-    text_pred = torch.argmax(text_logits, dim=1).item()
 
-    # Run through Fusion Model
-    speech_emb = speech_model(speech_input, return_embeddings=True)
-    text_emb = text_model(input_ids, attention_mask, return_embeddings=True)
-    fusion_logits = fusion_model(speech_emb, text_emb)
-    fusion_probs = torch.softmax(fusion_logits, dim=1).squeeze().tolist()
-    fusion_pred = torch.argmax(fusion_logits, dim=1).item()
+    with torch.no_grad():
+        # Speech Only
+        speech_logits = speech_model(speech_input)
+        speech_probs = torch.softmax(speech_logits, dim=1).squeeze().tolist()
+        speech_pred = torch.argmax(speech_logits, dim=1).item()
+
+        # Text Only
+        text_logits = text_model(input_ids, attention_mask)
+        text_probs = torch.softmax(text_logits, dim=1).squeeze().tolist()
+        text_pred = torch.argmax(text_logits, dim=1).item()
+
+        # Multimodal Fusion
+        speech_emb = speech_model(speech_input, return_embeddings=True)
+        text_emb = text_model(input_ids, attention_mask, return_embeddings=True)
+        fusion_logits = fusion_model(speech_emb, text_emb)
+        fusion_probs = torch.softmax(fusion_logits, dim=1).squeeze().tolist()
+        fusion_pred = torch.argmax(fusion_logits, dim=1).item()
 
     emotions_list = sorted(emotion_map.items(), key=lambda x: x[1])
     emotions = [k for k, v in emotions_list]
