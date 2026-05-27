@@ -11,12 +11,22 @@ sys.path.append(script_dir)
 # Import dataset and encoders from root and neighbor folders
 root_dir = os.path.join(script_dir, "../..")
 sys.path.append(root_dir)
-sys.path.append(os.path.join(root_dir, "models/speech_pipeline"))
-sys.path.append(os.path.join(root_dir, "models/text_pipeline"))
 
 from multimodal_dataset import get_multimodal_datasets
-from speech_model import SpeechModel
-from text_model import TextModel
+
+def load_module_from_path(module_name, file_path):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[module_name] = module
+    spec.loader.exec_module(module)
+    return module
+
+speech_mod = load_module_from_path("speech_model", os.path.join(root_dir, "models/speech_pipeline/model.py"))
+text_mod = load_module_from_path("text_model", os.path.join(root_dir, "models/text_pipeline/model.py"))
+
+SpeechModel = speech_mod.SpeechModel
+TextModel = text_mod.TextModel
 from model import FusionModel
 
 # Define paths
